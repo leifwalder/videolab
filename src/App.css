@@ -1,0 +1,101 @@
+html {
+  overflow-x: hidden;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.carousel {
+  position: relative;
+}
+.carousel-item {
+  opacity: 0;
+  width: 300px;
+  top: 200px;
+  height: initial;
+  z-index: 5;
+  align-self: center;
+  position: absolute;
+}
+
+.previous {
+  opacity: 1;
+  left: 0px;
+  /* transition: all 0.4s; */
+}
+.current {
+  opacity: 1;
+  top: 190px !important;
+  left: 300px;
+  z-index: 10;
+  width: 400px;
+  height: 200px;
+  margin: initial;
+
+  /* transition: all 0.5s; */
+}
+.next {
+  opacity: 1;
+  left: 700px;
+  /* transition: all 0.4s; */
+}
+
+.previous,
+.next {
+  transition: all 0.4s;
+}
+.current {
+  transition: all 0.5s;
+}
+
+.carousel-item:not(.active) {
+}
+
+.carousel {
+  display: flex;
+}
+
+.arrow {
+  width: 100px;
+  height: 100px;
+  align-self: center;
+}
+
+.about {
+  margin-top: 400px;
+}
+
+.video-list {
+  display: flex;
+  list-style: none;
+}
