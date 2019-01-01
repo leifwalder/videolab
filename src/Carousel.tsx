@@ -13,13 +13,14 @@ type Props = {
   style: { display: string };
   isActive: boolean;
   htmlVideos: HTMLVideoElement[];
+  cookiePrefix: string;
+  parsedCookies: App["state"]["parsedCookies"];
 };
 
 class Carousel extends React.Component<
   Props,
   {
     isFullscreen: () => boolean;
-    //htmlVideos: HTMLVideoElement[];
   }
 > {
   public LEFT_KEY = 37;
@@ -40,7 +41,6 @@ class Carousel extends React.Component<
         );
         /* tslint:enable:no-string-literal */
       }
-      //htmlVideos: []
     };
   }
 
@@ -66,7 +66,6 @@ class Carousel extends React.Component<
   };
 
   public handleKeyDown = (event: any) => {
-    console.log("this.props.isActive", this.props.isActive);
     if (!this.props.isActive || this.state.isFullscreen()) {
       return;
     }
@@ -83,13 +82,10 @@ class Carousel extends React.Component<
   };
 
   public handleChangeStep = (direction: "next" | "prev") => {
-    console.log("handleChangeStep()");
-
-    // save node's current time
+    // save video's current time
     this.updateTimeElapsed();
 
     const indexBeforeChange = Number(this.props.index.toString());
-    console.log("from index", indexBeforeChange);
 
     let toIndex;
     if (direction === "next") {
@@ -97,7 +93,6 @@ class Carousel extends React.Component<
     } else if (direction === "prev") {
       toIndex = this.props.prevStep();
     }
-    console.log("toIndex", toIndex);
 
     // pause last video if changed step
     const changedStep = toIndex && toIndex !== -1;
@@ -105,28 +100,9 @@ class Carousel extends React.Component<
     if (changedStep && previousNode) {
       previousNode.pause();
     }
-
-    //forward video if hasStartAtSecond
-    /*const toNode = toIndex && this.state.htmlVideos[toIndex];
-    const toVideo = toIndex && this.props.videos[toIndex];
-    console.log("changedStep", changedStep);
-    console.log("toNode", toNode);
-    console.log("toVideo", toVideo);
-    console.log(
-      "(changedStep && toNode && toVideo)",
-      changedStep && toNode && toVideo
-    );
-    if (changedStep && toNode && toVideo) {
-      console.log("toVideo.startAtSecond", toVideo.startAtSecond);
-      const newSrc = `${toVideo.contents[0].url}#t=${toVideo.startAtSecond}`;
-      console.log("newSrc", newSrc);
-      toNode.setAttribute("src", newSrc);
-    }*/
   };
 
   public updateTimeElapsed = () => {
-    console.log("updateTimeElapsed()");
-
     const htmlNodes = this.props.htmlVideos.filter(el => {
       return el != null;
     });
@@ -160,6 +136,8 @@ class Carousel extends React.Component<
                   htmlVideos={this.props.htmlVideos}
                   index={index}
                   isActive={this.props.isActive}
+                  cookiePrefix={this.props.cookiePrefix}
+                  parsedCookie={this.props.parsedCookies[vid.id]}
                 />
                 <h2>{index}</h2>
               </li>
@@ -172,6 +150,13 @@ class Carousel extends React.Component<
     );
   };
 
+  public nextStepViaArrow = () => {
+    this.handleChangeStep("next");
+  };
+  public prevStepViaArrow = () => {
+    this.handleChangeStep("prev");
+  };
+
   public render() {
     return (
       <div className="carousel" style={this.props.style}>
@@ -182,7 +167,7 @@ class Carousel extends React.Component<
           style={{
             opacity: this.props.index === 0 ? 0.1 : 1
           }}
-          onClick={this.props.prevStep}
+          onClick={this.prevStepViaArrow}
         />
 
         {this.renderVideoList()}
@@ -196,7 +181,7 @@ class Carousel extends React.Component<
               this.props.index === this.props.videos.length - 1 ? 0.1 : 1,
             transform: "scaleX(-1)"
           }}
-          onClick={this.props.nextStep}
+          onClick={this.nextStepViaArrow}
         />
       </div>
     );

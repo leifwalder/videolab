@@ -1,10 +1,8 @@
-// how do i pause the video on "->, <-"?
-
 /*
 
-  cookie/local save history
-  save index what video you looked at when switching history / offerd
-  nodejs app to circumvent CORS
+  [ ] cookie/local save history
+  [x] save index what video you looked at when switching history / offered
+  [ ] nodejs app to circumvent CORS
 
 
 */
@@ -74,6 +72,8 @@ class App extends React.Component<
     offeredHtmlVideos: HTMLVideoElement[];
     historyHtmlVideos: HTMLVideoElement[];
     touchedVideos: Array<IVideo["id"]>;
+    cookiePrefix: string;
+    parsedCookies: any;
   }
 > {
   constructor(props: any) {
@@ -112,15 +112,6 @@ class App extends React.Component<
             touchedVideos: [video.id, ...this.state.touchedVideos]
           });
         }
-
-        /*if (this.state.videoStore.history.indexOf(video) === -1) {
-          this.setState({
-            videoStore: {
-              offered: this.state.videoStore.offered,
-              history: [video, ...this.state.videoStore.history]
-            }
-          });
-        }*/
       },
       view: "offered",
       isViewingHistory: () => {
@@ -130,7 +121,9 @@ class App extends React.Component<
       viewHistoryAnchor: null,
       offeredHtmlVideos: [],
       historyHtmlVideos: [],
-      touchedVideos: []
+      touchedVideos: [],
+      cookiePrefix: "videoMemory_",
+      parsedCookies: false
     };
   }
 
@@ -142,21 +135,17 @@ class App extends React.Component<
         const historyVideos = this.state.videoStore.offered.filter(
           x => this.state.touchedVideos.indexOf(x.id) !== -1
         );
-        console.log("historyVideos", historyVideos);
         return historyVideos;
       }
     }
     return [];
-
-    /*return this.state.isInitWithData && this.state.videoStore[this.state.view]
-      ? this.state.videoStore[this.state.view]
-      : [];*/
   };
   public currentVideo = () => {
     return this.videos()[this.state.index];
   };
 
   public componentDidMount() {
+    // fetch data
     fetch("https://sela-test.herokuapp.com/assets/hkzxv.json")
       .then(response => {
         return response.json();
@@ -171,6 +160,27 @@ class App extends React.Component<
         });
         console.log(this, someJson);
       });
+
+    // read cookies
+    const cookies = document.cookie.split("; ");
+    const videoCookies = cookies.filter(x => {
+      return x.includes(this.state.cookiePrefix);
+    });
+    const parsedCookies: any = {};
+    for (const cookieData of videoCookies) {
+      const trimmedFromPrefix = cookieData.split(this.state.cookiePrefix)[1];
+      const key = trimmedFromPrefix.split("=")[0];
+      const value = trimmedFromPrefix.split("=")[1];
+      parsedCookies[key] = Number(value);
+    }
+
+    //const someValue = parsedCookies;
+
+    this.setState({
+      parsedCookies
+    });
+
+    console.log("parsedCookies", parsedCookies);
   }
 
   public viewOffered = () => {
@@ -208,13 +218,11 @@ class App extends React.Component<
   };
 
   public pauseAllVideos = () => {
-    console.log("trying to pause all videos...");
     const allHtmlFilteredVideos = this.state.offeredHtmlVideos
       .concat(this.state.historyHtmlVideos)
       .filter(el => {
         return el != null;
       });
-    console.log("allHtmlFilteredVideos", allHtmlFilteredVideos);
     for (const elem of allHtmlFilteredVideos) {
       if (elem && elem.pause) {
         elem.pause();
@@ -248,6 +256,8 @@ class App extends React.Component<
               addToHistory={this.state.addToHistory}
               isViewingHistory={this.state.isViewingHistory}
               isActive={this.state.view === "offered"}
+              cookiePrefix={this.state.cookiePrefix}
+              parsedCookies={this.state.parsedCookies}
               style={
                 this.state.view === "offered"
                   ? { display: "flex" }
@@ -263,6 +273,8 @@ class App extends React.Component<
               addToHistory={this.state.addToHistory}
               isViewingHistory={this.state.isViewingHistory}
               isActive={this.state.view === "history"}
+              cookiePrefix={this.state.cookiePrefix}
+              parsedCookies={this.state.parsedCookies}
               style={
                 this.state.view === "history"
                   ? { display: "flex" }

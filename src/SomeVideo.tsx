@@ -12,13 +12,14 @@ type Props = {
   isViewingHistory: App["state"]["isViewingHistory"];
   htmlVideos: HTMLVideoElement[];
   isActive: boolean;
+  cookiePrefix: string;
+  parsedCookie: number;
 };
 
 type State = {
   controls: () => boolean;
   node: HTMLVideoElement | null;
   videoSourceIsLoaded: boolean;
-  //src: null | string;
   isPristine: boolean;
   autoPlay: boolean;
 };
@@ -40,7 +41,6 @@ class SomeVideo extends React.Component<Props, State> {
       },
       node: null,
       videoSourceIsLoaded: false,
-      //src: null,
       isPristine: true,
       autoPlay: false
     };
@@ -55,12 +55,12 @@ class SomeVideo extends React.Component<Props, State> {
     this.props.video.node = someNode;
     this.setState({ node: someNode });
     if (!this.isInit) {
-      this.props.video.startAtSecond = 0;
+      const cookieData = this.props.parsedCookie ? this.props.parsedCookie : 26;
+      this.props.video.startAtSecond = cookieData;
       this.isInit = true;
       if (this.props.isViewingHistory()) {
         this.setState({
           isPristine: false
-          //src: this.srcForwarded() //will always be 0, change this...?
         });
       }
       this.setupEventListeners(someNode);
@@ -71,15 +71,12 @@ class SomeVideo extends React.Component<Props, State> {
     const doWhenLoadedData = () => {
       if (!this.state.videoSourceIsLoaded) {
         this.setState({
-          //src: this.srcForwarded(),
           videoSourceIsLoaded: true
         });
       }
     };
     const doWhenEnded = () => {
       if (this.state.node) {
-        //this.state.node.setAttribute("src", this.getVidSrc());
-        //TODO broken by changes
         this.setState({
           autoPlay: false
         });
@@ -102,7 +99,6 @@ class SomeVideo extends React.Component<Props, State> {
   };
 
   public handleClick = () => {
-    //this.setState({ controls: !this.state.controls });
     if (this.state.node) {
       this.state.node.pause();
     }
@@ -111,27 +107,23 @@ class SomeVideo extends React.Component<Props, State> {
 
   public touchPristineVideo = () => {
     if (this.state.isPristine && this.state.node) {
-      //this.state.node.setAttribute("src", this.getVidSrc());
       this.setState({
         isPristine: false,
         autoPlay: false
       });
-      this.props.video.startAtSecond = 0;
+      //this.props.video.startAtSecond = 0;
       this.props.addToHistory(this.props.video);
     }
   };
 
   public getVidSrc() {
     if (this.props.video.contents[0] && this.props.video.contents[0].url) {
-      /*const startAtSecond = this.props.isViewingHistory()
-        ? this
-        : this.props.video.startAtSecond;*/
-
       const mediaUrl = this.props.video.contents[0].url;
       const time =
         this.state.isPristine &&
         this.state.node &&
-        !this.props.isViewingHistory()
+        !this.props.isViewingHistory() &&
+        !this.props.video.startAtSecond
           ? Math.floor(this.state.node.duration / 2)
           : this.props.video.startAtSecond;
 
@@ -140,19 +132,6 @@ class SomeVideo extends React.Component<Props, State> {
     }
     throw Error("could not find src");
   }
-
-  /*public srcForwarded = () => {
-    if (this.state.node) {
-      const second = this.props.video.startAtSecond
-        ? this.props.video.startAtSecond
-        : Math.floor(this.state.node.duration / 2);
-
-      return this.state.node.duration
-        ? `${this.getVidSrc()}#t=${second}`
-        : this.getVidSrc();
-    }
-    return this.getVidSrc();
-  };*/
 
   public videoStyle = () => {
     return this.state.videoSourceIsLoaded ? {} : { display: "none" };
@@ -223,6 +202,15 @@ class SomeVideo extends React.Component<Props, State> {
 
   public componentWillUnmount() {
     document.removeEventListener("keydown", this.handleKeyDown.bind(this));
+
+    const cookie = `${this.props.cookiePrefix}${this.props.video.id}=${
+      this.props.video.startAtSecond
+    }; max-age=30`;
+
+    //why is  this.props.video.startAtSecond   always 26?
+
+    document.cookie = cookie;
+    console.log("cookie set", cookie);
   }
 }
 
