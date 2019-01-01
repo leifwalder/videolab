@@ -125,24 +125,19 @@ class Carousel extends React.Component<
   };
 
   public updateTimeElapsed = () => {
-    const valueToStore =
-      this.props.htmlVideos[this.props.index] &&
-      this.props.htmlVideos[this.props.index].currentTime
-        ? this.props.htmlVideos[this.props.index].currentTime
-        : 0;
+    console.log("updateTimeElapsed()");
 
-    console.log(
-      `const valueToStore =
-    this.props.htmlVideos[this.props.index] &&
-    this.props.htmlVideos[this.props.index].currentTime
-      ? this.props.htmlVideos[this.props.index].currentTime
-      : 0;`,
-      valueToStore
-    );
+    const htmlNodes = this.props.htmlVideos.filter(el => {
+      return el != null;
+    });
+
+    const valueToStore =
+      htmlNodes[this.props.index] && htmlNodes[this.props.index].currentTime
+        ? htmlNodes[this.props.index].currentTime
+        : 0;
 
     if (this.props.videos[this.props.index]) {
       this.props.videos[this.props.index].startAtSecond = valueToStore;
-      console.log("valueToStore", valueToStore);
     }
   };
 

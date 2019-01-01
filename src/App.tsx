@@ -107,20 +107,20 @@ class App extends React.Component<
         return -1;
       },
       addToHistory: (video: IVideo) => {
-        /*if (this.state.touchedVideos.indexOf(video.id) === -1) {
+        if (this.state.touchedVideos.indexOf(video.id) === -1) {
           this.setState({
             touchedVideos: [video.id, ...this.state.touchedVideos]
           });
-        }*/
+        }
 
-        if (this.state.videoStore.history.indexOf(video) === -1) {
+        /*if (this.state.videoStore.history.indexOf(video) === -1) {
           this.setState({
             videoStore: {
               offered: this.state.videoStore.offered,
               history: [video, ...this.state.videoStore.history]
             }
           });
-        }
+        }*/
       },
       view: "offered",
       isViewingHistory: () => {
@@ -135,9 +135,22 @@ class App extends React.Component<
   }
 
   public videos = () => {
-    return this.state.isInitWithData && this.state.videoStore[this.state.view]
+    if (this.state.isInitWithData) {
+      if (this.state.view === "offered") {
+        return this.state.videoStore[this.state.view];
+      } else {
+        const historyVideos = this.state.videoStore.offered.filter(
+          x => this.state.touchedVideos.indexOf(x.id) !== -1
+        );
+        console.log("historyVideos", historyVideos);
+        return historyVideos;
+      }
+    }
+    return [];
+
+    /*return this.state.isInitWithData && this.state.videoStore[this.state.view]
       ? this.state.videoStore[this.state.view]
-      : [];
+      : [];*/
   };
   public currentVideo = () => {
     return this.videos()[this.state.index];
@@ -196,11 +209,16 @@ class App extends React.Component<
 
   public pauseAllVideos = () => {
     console.log("trying to pause all videos...");
-    const allHtmlVideos = this.state.offeredHtmlVideos.concat(
-      this.state.historyHtmlVideos
-    );
-    for (const elem of allHtmlVideos) {
-      elem.pause();
+    const allHtmlFilteredVideos = this.state.offeredHtmlVideos
+      .concat(this.state.historyHtmlVideos)
+      .filter(el => {
+        return el != null;
+      });
+    console.log("allHtmlFilteredVideos", allHtmlFilteredVideos);
+    for (const elem of allHtmlFilteredVideos) {
+      if (elem && elem.pause) {
+        elem.pause();
+      }
     }
   };
 
@@ -237,7 +255,7 @@ class App extends React.Component<
               }
             />
             <Carousel
-              videos={this.state.videoStore.history}
+              videos={this.videos()}
               htmlVideos={this.state.historyHtmlVideos}
               index={this.state.index}
               nextStep={this.state.nextStep}

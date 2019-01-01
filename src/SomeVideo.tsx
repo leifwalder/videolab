@@ -129,7 +129,9 @@ class SomeVideo extends React.Component<Props, State> {
 
       const mediaUrl = this.props.video.contents[0].url;
       const time =
-        this.state.isPristine && this.state.node
+        this.state.isPristine &&
+        this.state.node &&
+        !this.props.isViewingHistory()
           ? Math.floor(this.state.node.duration / 2)
           : this.props.video.startAtSecond;
 
