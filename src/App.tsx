@@ -159,29 +159,36 @@ class App extends React.Component<
           }
         });
         console.log(this, someJson);
+        this.readCookies();
       });
+  }
 
-    // read cookies
-    const cookies = document.cookie.split("; ");
-    const videoCookies = cookies.filter(x => {
+  public readCookies = () => {
+    const cookies = document.cookie.split("; ").filter(x => {
       return x.includes(this.state.cookiePrefix);
     });
     const parsedCookies: any = {};
-    for (const cookieData of videoCookies) {
-      const trimmedFromPrefix = cookieData.split(this.state.cookiePrefix)[1];
-      const key = trimmedFromPrefix.split("=")[0];
-      const value = trimmedFromPrefix.split("=")[1];
+    for (const cookieData of cookies) {
+      const withoutPrefix = cookieData.split(this.state.cookiePrefix)[1];
+      const key = withoutPrefix.split("=")[0];
+      const value = withoutPrefix.split("=")[1];
       parsedCookies[key] = Number(value);
     }
-
-    //const someValue = parsedCookies;
-
     this.setState({
       parsedCookies
     });
 
+    // load history from cookies
+    for (const key in parsedCookies) {
+      if (true) {
+        const video = this.state.videoStore.offered.find(x => x.id === key);
+        if (parsedCookies[key] !== 0 && video) {
+          this.state.addToHistory(video);
+        }
+      }
+    }
     console.log("parsedCookies", parsedCookies);
-  }
+  };
 
   public viewOffered = () => {
     this.setState({
@@ -218,12 +225,12 @@ class App extends React.Component<
   };
 
   public pauseAllVideos = () => {
-    const allHtmlFilteredVideos = this.state.offeredHtmlVideos
+    const allFilteredHtmlVideos = this.state.offeredHtmlVideos
       .concat(this.state.historyHtmlVideos)
       .filter(el => {
         return el != null;
       });
-    for (const elem of allHtmlFilteredVideos) {
+    for (const elem of allFilteredHtmlVideos) {
       if (elem && elem.pause) {
         elem.pause();
       }
@@ -245,7 +252,7 @@ class App extends React.Component<
         </div>
 
         <div>index: {this.state.index}</div>
-        {this.state.isInitWithData ? (
+        {this.state.isInitWithData && this.state.parsedCookies ? (
           <>
             <Carousel
               videos={this.state.videoStore.offered}

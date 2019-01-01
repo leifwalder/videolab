@@ -55,14 +55,10 @@ class SomeVideo extends React.Component<Props, State> {
     this.props.video.node = someNode;
     this.setState({ node: someNode });
     if (!this.isInit) {
-      const cookieData = this.props.parsedCookie ? this.props.parsedCookie : 26;
-      this.props.video.startAtSecond = cookieData;
+      this.props.video.startAtSecond = this.props.parsedCookie
+        ? this.props.parsedCookie
+        : 0;
       this.isInit = true;
-      if (this.props.isViewingHistory()) {
-        this.setState({
-          isPristine: false
-        });
-      }
       this.setupEventListeners(someNode);
     }
   };
@@ -75,6 +71,8 @@ class SomeVideo extends React.Component<Props, State> {
         });
       }
     };
+    node.addEventListener("loadeddata", doWhenLoadedData, false);
+
     const doWhenEnded = () => {
       if (this.state.node) {
         this.setState({
@@ -85,24 +83,23 @@ class SomeVideo extends React.Component<Props, State> {
         this.leaveFullscreen();
       }
     };
-    node.addEventListener("loadeddata", doWhenLoadedData, false);
     node.addEventListener("ended", doWhenEnded, false);
-    node.addEventListener(
-      "mouseover",
-      (e: any) => {
-        if (!this.props.isCurrent) {
-          e.preventDefault();
-        }
-      },
-      false
-    );
+
+    const mouseover = (e: any) => {
+      if (!this.props.isCurrent) {
+        e.preventDefault();
+      }
+    };
+    node.addEventListener("mouseover", mouseover, false);
   };
 
   public handleClick = () => {
-    if (this.state.node) {
-      this.state.node.pause();
+    if (this.props.isCurrent) {
+      if (this.state.node) {
+        this.state.node.pause();
+      }
+      this.touchPristineVideo();
     }
-    this.touchPristineVideo();
   };
 
   public touchPristineVideo = () => {
@@ -111,7 +108,6 @@ class SomeVideo extends React.Component<Props, State> {
         isPristine: false,
         autoPlay: false
       });
-      //this.props.video.startAtSecond = 0;
       this.props.addToHistory(this.props.video);
     }
   };
