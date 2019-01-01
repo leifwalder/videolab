@@ -202,15 +202,6 @@ class SomeVideo extends React.Component<Props, State> {
 
   public componentWillUnmount() {
     document.removeEventListener("keydown", this.handleKeyDown.bind(this));
-
-    const cookie = `${this.props.cookiePrefix}${this.props.video.id}=${
-      this.props.video.startAtSecond
-    }; max-age=30`;
-
-    //why is  this.props.video.startAtSecond   always 26?
-
-    document.cookie = cookie;
-    console.log("cookie set", cookie);
   }
 }
 

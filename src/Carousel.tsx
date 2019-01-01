@@ -114,7 +114,17 @@ class Carousel extends React.Component<
 
     if (this.props.videos[this.props.index]) {
       this.props.videos[this.props.index].startAtSecond = valueToStore;
+
+      this.saveCookie(this.props.videos[this.props.index]);
     }
+  };
+
+  public saveCookie = (video: IVideo) => {
+    const cookie = `${this.props.cookiePrefix}${video.id}=${
+      video.startAtSecond
+    }; max-age=60`;
+    document.cookie = cookie;
+    console.log("cookie set", cookie);
   };
 
   public renderVideoList = () => {
