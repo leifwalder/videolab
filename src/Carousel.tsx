@@ -12,13 +12,14 @@ type Props = {
   isViewingHistory: App["state"]["isViewingHistory"];
   style: { display: string };
   isActive: boolean;
+  htmlVideos: HTMLVideoElement[];
 };
 
 class Carousel extends React.Component<
   Props,
   {
     isFullscreen: () => boolean;
-    //htmlVideos: HTMLVideoElement[]
+    //htmlVideos: HTMLVideoElement[];
   }
 > {
   public LEFT_KEY = 37;
@@ -65,6 +66,7 @@ class Carousel extends React.Component<
   };
 
   public handleKeyDown = (event: any) => {
+    console.log("this.props.isActive", this.props.isActive);
     if (!this.props.isActive || this.state.isFullscreen()) {
       return;
     }
@@ -81,33 +83,67 @@ class Carousel extends React.Component<
   };
 
   public handleChangeStep = (direction: "next" | "prev") => {
-    // save time cursor
+    console.log("handleChangeStep()");
+
+    // save node's current time
     this.updateTimeElapsed();
 
-    //pause inactive video
-    if (this.props.videos[this.props.index].node) {
-      this.props.videos[this.props.index].node.pause();
+    const indexBeforeChange = Number(this.props.index.toString());
+    console.log("from index", indexBeforeChange);
+
+    let toIndex;
+    if (direction === "next") {
+      toIndex = this.props.nextStep();
+    } else if (direction === "prev") {
+      toIndex = this.props.prevStep();
+    }
+    console.log("toIndex", toIndex);
+
+    // pause last video if changed step
+    const changedStep = toIndex && toIndex !== -1;
+    const previousNode = this.props.htmlVideos[indexBeforeChange];
+    if (changedStep && previousNode) {
+      previousNode.pause();
     }
 
-    if (direction === "next") {
-      const nextIndex = this.props.nextStep();
-      console.log("nextIndex", nextIndex);
-      //act on nextIndex !== -1
-      /*if (nextIndex !== -1 && this.props.videos[nextIndex]) {
-        this.props.videos.element
-      }*/
-    } else if (direction === "prev") {
-      this.props.prevStep();
-    }
+    //forward video if hasStartAtSecond
+    /*const toNode = toIndex && this.state.htmlVideos[toIndex];
+    const toVideo = toIndex && this.props.videos[toIndex];
+    console.log("changedStep", changedStep);
+    console.log("toNode", toNode);
+    console.log("toVideo", toVideo);
+    console.log(
+      "(changedStep && toNode && toVideo)",
+      changedStep && toNode && toVideo
+    );
+    if (changedStep && toNode && toVideo) {
+      console.log("toVideo.startAtSecond", toVideo.startAtSecond);
+      const newSrc = `${toVideo.contents[0].url}#t=${toVideo.startAtSecond}`;
+      console.log("newSrc", newSrc);
+      toNode.setAttribute("src", newSrc);
+    }*/
   };
 
   public updateTimeElapsed = () => {
     const valueToStore =
-      this.props.videos[this.props.index] &&
-      this.props.videos[this.props.index].node.currentTime
-        ? this.props.videos[this.props.index].node.currentTime
+      this.props.htmlVideos[this.props.index] &&
+      this.props.htmlVideos[this.props.index].currentTime
+        ? this.props.htmlVideos[this.props.index].currentTime
         : 0;
-    this.props.videos[this.props.index].startAtSecond = valueToStore;
+
+    console.log(
+      `const valueToStore =
+    this.props.htmlVideos[this.props.index] &&
+    this.props.htmlVideos[this.props.index].currentTime
+      ? this.props.htmlVideos[this.props.index].currentTime
+      : 0;`,
+      valueToStore
+    );
+
+    if (this.props.videos[this.props.index]) {
+      this.props.videos[this.props.index].startAtSecond = valueToStore;
+      console.log("valueToStore", valueToStore);
+    }
   };
 
   public renderVideoList = () => {
@@ -117,7 +153,7 @@ class Carousel extends React.Component<
           this.props.videos.map((vid, index) => {
             return (
               <li
-                key={vid.id}
+                key={`${vid.id} history:${this.props.isViewingHistory}`}
                 className={`${this.ListItemCssClass(index)} carousel-item`}
               >
                 <SomeVideo
@@ -126,7 +162,7 @@ class Carousel extends React.Component<
                   isFullscreen={this.state.isFullscreen}
                   addToHistory={this.props.addToHistory}
                   isViewingHistory={this.props.isViewingHistory}
-                  //htmlVideos={this.props.videos}
+                  htmlVideos={this.props.htmlVideos}
                   index={index}
                   isActive={this.props.isActive}
                 />

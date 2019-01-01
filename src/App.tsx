@@ -71,6 +71,9 @@ class App extends React.Component<
     isViewingHistory: () => boolean;
     viewOfferedAnchor: HTMLAnchorElement | null;
     viewHistoryAnchor: HTMLAnchorElement | null;
+    offeredHtmlVideos: HTMLVideoElement[];
+    historyHtmlVideos: HTMLVideoElement[];
+    touchedVideos: Array<IVideo["id"]>;
   }
 > {
   constructor(props: any) {
@@ -90,7 +93,7 @@ class App extends React.Component<
           this.setState({
             index: this.state.index + 1
           });
-          return this.state.index + 1;
+          return this.state.index;
         }
         return -1;
       },
@@ -99,11 +102,17 @@ class App extends React.Component<
           this.setState({
             index: this.state.index - 1
           });
-          return this.state.index - 1;
+          return this.state.index;
         }
         return -1;
       },
-      addToHistory: (video: any) => {
+      addToHistory: (video: IVideo) => {
+        /*if (this.state.touchedVideos.indexOf(video.id) === -1) {
+          this.setState({
+            touchedVideos: [video.id, ...this.state.touchedVideos]
+          });
+        }*/
+
         if (this.state.videoStore.history.indexOf(video) === -1) {
           this.setState({
             videoStore: {
@@ -118,7 +127,10 @@ class App extends React.Component<
         return this.state.view === "history";
       },
       viewOfferedAnchor: null,
-      viewHistoryAnchor: null
+      viewHistoryAnchor: null,
+      offeredHtmlVideos: [],
+      historyHtmlVideos: [],
+      touchedVideos: []
     };
   }
 
@@ -156,6 +168,7 @@ class App extends React.Component<
     if (this.state.viewOfferedAnchor) {
       this.state.viewOfferedAnchor.blur();
     }
+    this.pauseAllVideos();
   };
 
   public viewHistory = () => {
@@ -166,6 +179,7 @@ class App extends React.Component<
     if (this.state.viewHistoryAnchor) {
       this.state.viewHistoryAnchor.blur();
     }
+    this.pauseAllVideos();
   };
 
   public saveOfferedNode = (someNode: HTMLAnchorElement) => {
@@ -178,6 +192,16 @@ class App extends React.Component<
     this.setState({
       viewHistoryAnchor: someNode
     });
+  };
+
+  public pauseAllVideos = () => {
+    console.log("trying to pause all videos...");
+    const allHtmlVideos = this.state.offeredHtmlVideos.concat(
+      this.state.historyHtmlVideos
+    );
+    for (const elem of allHtmlVideos) {
+      elem.pause();
+    }
   };
 
   public render() {
@@ -199,6 +223,7 @@ class App extends React.Component<
           <>
             <Carousel
               videos={this.state.videoStore.offered}
+              htmlVideos={this.state.offeredHtmlVideos}
               index={this.state.index}
               nextStep={this.state.nextStep}
               prevStep={this.state.prevStep}
@@ -213,6 +238,7 @@ class App extends React.Component<
             />
             <Carousel
               videos={this.state.videoStore.history}
+              htmlVideos={this.state.historyHtmlVideos}
               index={this.state.index}
               nextStep={this.state.nextStep}
               prevStep={this.state.prevStep}

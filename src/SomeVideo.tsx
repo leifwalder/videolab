@@ -10,7 +10,7 @@ type Props = {
   isFullscreen: Carousel["state"]["isFullscreen"];
   addToHistory: App["state"]["addToHistory"];
   isViewingHistory: App["state"]["isViewingHistory"];
-  //htmlVideos: Carousel["state"]["htmlVideos"];
+  htmlVideos: HTMLVideoElement[];
   isActive: boolean;
 };
 
@@ -18,7 +18,7 @@ type State = {
   controls: () => boolean;
   node: HTMLVideoElement | null;
   videoSourceIsLoaded: boolean;
-  src: null | string;
+  //src: null | string;
   isPristine: boolean;
   autoPlay: boolean;
 };
@@ -40,7 +40,7 @@ class SomeVideo extends React.Component<Props, State> {
       },
       node: null,
       videoSourceIsLoaded: false,
-      src: null,
+      //src: null,
       isPristine: true,
       autoPlay: false
     };
@@ -51,15 +51,16 @@ class SomeVideo extends React.Component<Props, State> {
   }
 
   public saveNode = (someNode: HTMLVideoElement) => {
-    //this.props.htmlVideos[this.props.index] = someNode;
+    this.props.htmlVideos[this.props.index] = someNode;
     this.props.video.node = someNode;
     this.setState({ node: someNode });
     if (!this.isInit) {
+      this.props.video.startAtSecond = 0;
       this.isInit = true;
       if (this.props.isViewingHistory()) {
         this.setState({
-          isPristine: false,
-          src: this.srcForwarded() //will always be 0, change this...?
+          isPristine: false
+          //src: this.srcForwarded() //will always be 0, change this...?
         });
       }
       this.setupEventListeners(someNode);
@@ -70,14 +71,15 @@ class SomeVideo extends React.Component<Props, State> {
     const doWhenLoadedData = () => {
       if (!this.state.videoSourceIsLoaded) {
         this.setState({
-          src: this.srcForwarded(),
+          //src: this.srcForwarded(),
           videoSourceIsLoaded: true
         });
       }
     };
     const doWhenEnded = () => {
       if (this.state.node) {
-        this.state.node.setAttribute("src", this.getVidSrc());
+        //this.state.node.setAttribute("src", this.getVidSrc());
+        //TODO broken by changes
         this.setState({
           autoPlay: false
         });
@@ -109,23 +111,35 @@ class SomeVideo extends React.Component<Props, State> {
 
   public touchPristineVideo = () => {
     if (this.state.isPristine && this.state.node) {
-      this.state.node.setAttribute("src", this.getVidSrc());
+      //this.state.node.setAttribute("src", this.getVidSrc());
       this.setState({
         isPristine: false,
-        autoPlay: true
+        autoPlay: false
       });
+      this.props.video.startAtSecond = 0;
       this.props.addToHistory(this.props.video);
     }
   };
 
   public getVidSrc() {
     if (this.props.video.contents[0] && this.props.video.contents[0].url) {
-      return this.props.video.contents[0].url;
+      /*const startAtSecond = this.props.isViewingHistory()
+        ? this
+        : this.props.video.startAtSecond;*/
+
+      const mediaUrl = this.props.video.contents[0].url;
+      const time =
+        this.state.isPristine && this.state.node
+          ? Math.floor(this.state.node.duration / 2)
+          : this.props.video.startAtSecond;
+
+      const src = `${mediaUrl}#t=${time}`;
+      return src;
     }
     throw Error("could not find src");
   }
 
-  public srcForwarded = () => {
+  /*public srcForwarded = () => {
     if (this.state.node) {
       const second = this.props.video.startAtSecond
         ? this.props.video.startAtSecond
@@ -136,7 +150,7 @@ class SomeVideo extends React.Component<Props, State> {
         : this.getVidSrc();
     }
     return this.getVidSrc();
-  };
+  };*/
 
   public videoStyle = () => {
     return this.state.videoSourceIsLoaded ? {} : { display: "none" };
@@ -192,11 +206,11 @@ class SomeVideo extends React.Component<Props, State> {
           <></>
         )}
         <video
-          id={this.props.video.id}
+          id={`${this.props.video.id} history:${this.props.isViewingHistory()}`}
           width={this.props.isCurrent ? 400 : 300}
           controls={this.state.controls()}
           autoPlay={this.state.autoPlay}
-          src={this.state.src || this.getVidSrc()}
+          src={this.getVidSrc()}
           onClick={this.handleClick}
           ref={this.saveNode}
           style={this.videoStyle()}
