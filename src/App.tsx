@@ -1,8 +1,16 @@
 // how do i pause the video on "->, <-"?
 
+/*
+
+  cookie/local save history
+  save index what video you looked at when switching history / offerd
+  nodejs app to circumvent CORS
+
+
+*/
+
 import * as React from "react";
 import "./App.css";
-// import SomeVideo from "./SomeVideo";
 import Carousel from "./Carousel";
 import AboutVideo from "./About";
 
@@ -44,6 +52,7 @@ export interface IVideo {
   description: string;
   id: string;
   startAtSecond: number;
+  node: HTMLVideoElement;
 }
 
 class App extends React.Component<
@@ -51,16 +60,17 @@ class App extends React.Component<
   {
     isInitWithData: IEndpointData | false;
     index: number;
-    nextStep: () => void;
-    prevStep: () => void;
+    nextStep: () => number;
+    prevStep: () => number;
     addToHistory: (video: any) => void;
     videoStore: {
       offered: IVideo[];
       history: IVideo[];
     };
     view: "offered" | "history";
-    toggleView: () => void;
     isViewingHistory: () => boolean;
+    viewOfferedAnchor: HTMLAnchorElement | null;
+    viewHistoryAnchor: HTMLAnchorElement | null;
   }
 > {
   constructor(props: any) {
@@ -80,21 +90,20 @@ class App extends React.Component<
           this.setState({
             index: this.state.index + 1
           });
+          return this.state.index + 1;
         }
+        return -1;
       },
       prevStep: () => {
         if (this.state.index !== 0) {
           this.setState({
             index: this.state.index - 1
           });
+          return this.state.index - 1;
         }
+        return -1;
       },
       addToHistory: (video: any) => {
-        console.log("addToHistory()");
-        console.log(
-          "this.state.videoStore.history.indexOf(video)",
-          this.state.videoStore.history.indexOf(video)
-        );
         if (this.state.videoStore.history.indexOf(video) === -1) {
           this.setState({
             videoStore: {
@@ -103,23 +112,13 @@ class App extends React.Component<
             }
           });
         }
-        console.log(
-          "this.state.videoStore.history: ",
-          this.state.videoStore.history
-        );
       },
       view: "offered",
-      toggleView: () => {
-        const setToView = this.state.view === "offered" ? "history" : "offered";
-        if (this.state.view !== setToView) {
-          this.setState({
-            view: setToView
-          });
-        }
-      },
       isViewingHistory: () => {
         return this.state.view === "history";
-      }
+      },
+      viewOfferedAnchor: null,
+      viewHistoryAnchor: null
     };
   }
 
@@ -145,7 +144,7 @@ class App extends React.Component<
             history: []
           }
         });
-        console.log(someJson);
+        console.log(this, someJson);
       });
   }
 
@@ -154,12 +153,30 @@ class App extends React.Component<
       view: "offered",
       index: 0
     });
+    if (this.state.viewOfferedAnchor) {
+      this.state.viewOfferedAnchor.blur();
+    }
   };
 
   public viewHistory = () => {
     this.setState({
       view: "history",
       index: 0
+    });
+    if (this.state.viewHistoryAnchor) {
+      this.state.viewHistoryAnchor.blur();
+    }
+  };
+
+  public saveOfferedNode = (someNode: HTMLAnchorElement) => {
+    this.setState({
+      viewOfferedAnchor: someNode
+    });
+  };
+
+  public saveHistoryNode = (someNode: HTMLAnchorElement) => {
+    this.setState({
+      viewHistoryAnchor: someNode
     });
   };
 
@@ -168,11 +185,11 @@ class App extends React.Component<
       <div className="App">
         <div>
           viewing:
-          <a href="#" onClick={this.viewOffered}>
+          <a href="#" onClick={this.viewOffered} ref={this.saveOfferedNode}>
             Our offered videos
           </a>
           <br />
-          <a href="#" onClick={this.viewHistory}>
+          <a href="#" onClick={this.viewHistory} ref={this.saveHistoryNode}>
             My history
           </a>
         </div>
@@ -186,7 +203,6 @@ class App extends React.Component<
               nextStep={this.state.nextStep}
               prevStep={this.state.prevStep}
               addToHistory={this.state.addToHistory}
-              toggleView={this.state.toggleView}
               isViewingHistory={this.state.isViewingHistory}
               isActive={this.state.view === "offered"}
               style={
@@ -201,7 +217,6 @@ class App extends React.Component<
               nextStep={this.state.nextStep}
               prevStep={this.state.prevStep}
               addToHistory={this.state.addToHistory}
-              toggleView={this.state.toggleView}
               isViewingHistory={this.state.isViewingHistory}
               isActive={this.state.view === "history"}
               style={

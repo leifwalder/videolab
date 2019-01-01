@@ -51,6 +51,7 @@ html {
 .previous {
   opacity: 1;
   left: 0px;
+  filter: grayscale(100%);
   /* transition: all 0.4s; */
 }
 .current {
@@ -67,6 +68,7 @@ html {
 .next {
   opacity: 1;
   left: 700px;
+  filter: grayscale(100%);
   /* transition: all 0.4s; */
 }
 
@@ -98,4 +100,16 @@ html {
 .video-list {
   display: flex;
   list-style: none;
+}
+
+.flip-horizontally {
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+}
+
+.play-button {
+  position: absolute;
+  height: 50%;
+  top: 30%;
+  left: 40%;
 }

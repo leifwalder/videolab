@@ -1,19 +1,23 @@
 import * as React from "react";
 import App, { IVideo } from "./App";
 import Carousel from "./Carousel";
+import * as playButton from "./assets/play_inverse.png";
 
 type Props = {
   video: IVideo;
   isCurrent: boolean;
+  index: number;
   isFullscreen: Carousel["state"]["isFullscreen"];
   addToHistory: App["state"]["addToHistory"];
   isViewingHistory: App["state"]["isViewingHistory"];
+  //htmlVideos: Carousel["state"]["htmlVideos"];
+  isActive: boolean;
 };
 
 type State = {
-  controls: boolean;
+  controls: () => boolean;
   node: HTMLVideoElement | null;
-  customSrcIsSet: boolean;
+  videoSourceIsLoaded: boolean;
   src: null | string;
   isPristine: boolean;
   autoPlay: boolean;
@@ -31,9 +35,11 @@ class SomeVideo extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      controls: false,
+      controls: () => {
+        return this.props.isCurrent && !this.state.isPristine;
+      },
       node: null,
-      customSrcIsSet: false,
+      videoSourceIsLoaded: false,
       src: null,
       isPristine: true,
       autoPlay: false
@@ -45,12 +51,15 @@ class SomeVideo extends React.Component<Props, State> {
   }
 
   public saveNode = (someNode: HTMLVideoElement) => {
+    //this.props.htmlVideos[this.props.index] = someNode;
+    this.props.video.node = someNode;
     this.setState({ node: someNode });
     if (!this.isInit) {
       this.isInit = true;
       if (this.props.isViewingHistory()) {
         this.setState({
-          isPristine: false
+          isPristine: false,
+          src: this.srcForwarded() //will always be 0, change this...?
         });
       }
       this.setupEventListeners(someNode);
@@ -59,12 +68,10 @@ class SomeVideo extends React.Component<Props, State> {
 
   public setupEventListeners = (node: any) => {
     const doWhenLoadedData = () => {
-      console.log("doWhenLoadedData()");
-      console.log("this.state.customSrcIsSet", this.state.customSrcIsSet);
-      if (!this.state.customSrcIsSet) {
+      if (!this.state.videoSourceIsLoaded) {
         this.setState({
           src: this.srcForwarded(),
-          customSrcIsSet: true
+          videoSourceIsLoaded: true
         });
       }
     };
@@ -93,11 +100,10 @@ class SomeVideo extends React.Component<Props, State> {
   };
 
   public handleClick = () => {
-    this.setState({ controls: !this.state.controls });
+    //this.setState({ controls: !this.state.controls });
     if (this.state.node) {
       this.state.node.pause();
     }
-    this.updateTimeElapsed();
     this.touchPristineVideo();
   };
 
@@ -108,17 +114,6 @@ class SomeVideo extends React.Component<Props, State> {
         isPristine: false,
         autoPlay: true
       });
-      this.props.video.startAtSecond = Math.floor(this.state.node.currentTime);
-
-      console.log("this.state.node.currentTime", this.state.node.currentTime);
-      console.log(
-        "typeof this.state.node.currentTime",
-        typeof this.state.node.currentTime
-      );
-      console.log(
-        "Math.floor(this.state.node.currentTime)",
-        Math.floor(this.state.node.currentTime)
-      );
       this.props.addToHistory(this.props.video);
     }
   };
@@ -131,11 +126,6 @@ class SomeVideo extends React.Component<Props, State> {
   }
 
   public srcForwarded = () => {
-    console.log(
-      "srcForwarded(), this.props.isViewingHistory()",
-      this.props.isViewingHistory()
-    );
-    console.log("this.state.node", this.state.node);
     if (this.state.node) {
       const second = this.props.video.startAtSecond
         ? this.props.video.startAtSecond
@@ -149,7 +139,7 @@ class SomeVideo extends React.Component<Props, State> {
   };
 
   public videoStyle = () => {
-    return this.state.customSrcIsSet ? {} : { display: "none" };
+    return this.state.videoSourceIsLoaded ? {} : { display: "none" };
   };
 
   public goFullscreen() {
@@ -167,12 +157,9 @@ class SomeVideo extends React.Component<Props, State> {
   }
 
   public handleKeyDown = (event: any) => {
-    if (!this.props.isCurrent) {
+    if (!this.props.isActive || !this.props.isCurrent) {
       return;
     }
-
-    this.updateTimeElapsed();
-
     switch (event.keyCode) {
       case this.UP_KEY:
         this.goFullscreen();
@@ -196,20 +183,18 @@ class SomeVideo extends React.Component<Props, State> {
     }
   };
 
-  public updateTimeElapsed = () => {
-    this.props.video.startAtSecond =
-      this.state.node && this.state.node.currentTime
-        ? this.state.node.currentTime
-        : 0;
-  };
-
   public render() {
     return (
       <div>
+        {this.state.isPristine && this.props.isCurrent ? (
+          <img className="play-button flip-horizontally" src={playButton} />
+        ) : (
+          <></>
+        )}
         <video
-          id="video"
+          id={this.props.video.id}
           width={this.props.isCurrent ? 400 : 300}
-          controls={this.state.controls}
+          controls={this.state.controls()}
           autoPlay={this.state.autoPlay}
           src={this.state.src || this.getVidSrc()}
           onClick={this.handleClick}
