@@ -126,7 +126,7 @@ class SomeVideo extends React.Component<Props, State> {
       const src = `${mediaUrl}#t=${time}`;
       return src;
     }
-    throw Error("could not find src");
+    throw Error("could not find video-url");
   }
 
   public videoStyle = () => {
@@ -143,7 +143,7 @@ class SomeVideo extends React.Component<Props, State> {
     try {
       document.exitFullscreen();
     } catch (e) {
-      //continue silently...
+      // continue silently...
     }
   }
 
