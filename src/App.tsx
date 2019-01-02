@@ -1,6 +1,6 @@
 /*
 
-  [ ] cookie/local save history
+  [x] cookie/local save history
   [x] save index what video you looked at when switching history / offered
   [ ] nodejs app to circumvent CORS
 

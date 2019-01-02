@@ -157,20 +157,24 @@ class SomeVideo extends React.Component<Props, State> {
         break;
       case this.ENTER_KEY:
       case this.SPACE_KEY:
-        this.touchPristineVideo();
-        if (this.state.node) {
-          if (this.state.node.paused) {
-            this.state.node.play();
-          } else {
-            this.state.node.pause();
-          }
-        }
+        this.togglePlay();
         break;
       case this.DOWN_KEY:
         this.leaveFullscreen();
         break;
       default:
         break;
+    }
+  };
+
+  public togglePlay = () => {
+    this.touchPristineVideo();
+    if (this.state.node) {
+      if (this.state.node.paused) {
+        this.state.node.play();
+      } else {
+        this.state.node.pause();
+      }
     }
   };
 
