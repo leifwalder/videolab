@@ -1,46 +1,73 @@
+@import url("https://fonts.googleapis.com/css?family=Open+Sans|Roboto");
+
+/*
+
+  font-family: 'Open Sans', sans-serif;
+  font-family: 'Roboto', sans-serif;
+
+*/
+
+.about {
+  font-family: "Open Sans", sans-serif;
+}
+
 html {
   overflow-x: hidden;
 }
 
 .App {
   text-align: center;
+  font-family: "Roboto", sans-serif;
+  margin-top: 5vh;
 }
 
-.carousel {
-  position: relative;
+.carousel-wrapper {
+  display: flex;
+  justify-content: center;
 }
+
+.carousel-outer {
+  display: flex;
+  align-content: center;
+}
+
+.carousel-inner {
+  display: flex;
+}
+
+.video-list {
+  display: flex;
+  list-style: none;
+  width: 80vw;
+  height: 33vh;
+  justify-content: center;
+}
+
+video {
+  width: 100% !important;
+  height: 100%;
+}
+
 .carousel-item {
+  display: flex;
   opacity: 0;
-  width: 300px;
-  top: 200px;
-  height: initial;
+  width: 25vw; /**/
   z-index: 5;
   align-self: center;
-  position: absolute;
-}
-
-.previous {
-  /*opacity: 1;*/
-  left: 0px;
-  filter: grayscale(100%);
-  /* transition: all 0.4s; */
 }
 .current {
   opacity: 1;
-  top: 190px !important;
-  left: 300px;
   z-index: 10;
-  width: 400px;
-  height: 200px;
+  width: 35vw; /**/
   margin: initial;
-
-  /* transition: all 0.5s; */
+}
+.previous {
+  left: 0px;
+  filter: grayscale(100%);
 }
 .next {
-  /*opacity: 1;*/
   left: 700px;
   filter: grayscale(100%);
-  /* transition: all 0.4s; */
 }
 
 .previous,
@@ -53,10 +80,7 @@ html {
 }
 
 .carousel-item:not(.active) {
-}
-
-.carousel {
-  display: flex;
+  width: 0px;
 }
 
 .arrow {
@@ -65,23 +89,35 @@ html {
   align-self: center;
 }
 
-.about {
-  margin-top: 400px;
-}
-
-.video-list {
-  display: flex;
-  list-style: none;
-}
-
 .flip-horizontally {
   -webkit-transform: scaleX(-1);
   transform: scaleX(-1);
 }
 
+.play-button-wrapper {
+  position: relative;
+}
+
 .play-button {
   position: absolute;
-  height: 50%;
-  top: 30%;
-  left: 40%;
+  top: 23%;
+  left: 50%;
+  width: 4vw;
+  height: auto;
+}
+
+.debug {
+  position: absolute;
+  left: 50%;
+}
+
+.viewcontrols input[type="radio"] {
+  -ms-transform: scale(2); /* IE 9 */
+  -webkit-transform: scale(2); /* Chrome, Safari, Opera */
+  transform: scale(2);
+  margin: 5px;
+}
+.viewcontrols span {
+  margin-left: 10px;
+  margin-right: 10px;
 }

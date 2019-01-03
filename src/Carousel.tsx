@@ -11,10 +11,13 @@ type Props = {
   addToHistory: App["state"]["addToHistory"];
   isViewingHistory: App["state"]["isViewingHistory"];
   style: { display: string };
-  isActive: boolean;
+  isActive: () => boolean;
   htmlVideos: HTMLVideoElement[];
   cookiePrefix: string;
   parsedCookies: App["state"]["parsedCookies"];
+  toggleOfferedHistory: App["toggleOfferedHistory"];
+  mutateKeyEventListeners: App["state"]["mutateKeyEventListeners"];
+  view: string;
 };
 
 class Carousel extends React.Component<
@@ -25,10 +28,10 @@ class Carousel extends React.Component<
 > {
   public LEFT_KEY = 37;
   public RIGHT_KEY = 39;
-  /*public UP_KEY = 38;
+  public UP_KEY = 38;
   public DOWN_KEY = 40;
   public ESCAPE_KEY = 27;
-  public ENTER_KEY = 13;*/
+  public ENTER_KEY = 13;
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -45,7 +48,9 @@ class Carousel extends React.Component<
   }
 
   public componentWillMount() {
-    document.addEventListener("keydown", this.handleKeyDown.bind(this));
+    //document.addEventListener("keydown", this.handleKeyDown.bind(this));
+
+    this.props.mutateKeyEventListeners(this.handleKeyDown, this.props.view);
   }
 
   public ListItemCssClass = (index: number) => {
@@ -66,7 +71,8 @@ class Carousel extends React.Component<
   };
 
   public handleKeyDown = (event: any) => {
-    if (!this.props.isActive || this.state.isFullscreen()) {
+    if (this.state.isFullscreen()) {
+      //!this.props.isActive() ||
       return;
     }
     switch (event.keyCode) {
@@ -75,6 +81,9 @@ class Carousel extends React.Component<
         break;
       case this.RIGHT_KEY:
         this.handleChangeStep("next");
+        break;
+      case this.DOWN_KEY:
+        this.props.toggleOfferedHistory();
         break;
       default:
         break;
@@ -138,7 +147,9 @@ class Carousel extends React.Component<
               >
                 <SomeVideo
                   video={vid}
-                  isCurrent={index === this.props.index && this.props.isActive}
+                  isCurrent={
+                    index === this.props.index && this.props.isActive()
+                  }
                   isFullscreen={this.state.isFullscreen}
                   addToHistory={this.props.addToHistory}
                   isViewingHistory={this.props.isViewingHistory}
@@ -148,7 +159,7 @@ class Carousel extends React.Component<
                   cookiePrefix={this.props.cookiePrefix}
                   parsedCookie={this.props.parsedCookies[vid.id]}
                 />
-                <h2>{index}</h2>
+                <h2 className="debug">{index}</h2>
               </li>
             );
           })
@@ -168,36 +179,34 @@ class Carousel extends React.Component<
 
   public render() {
     return (
-      <div className="carousel" style={this.props.style}>
-        <img
-          className="arrow left"
-          src={leftArrow}
-          alt="left arrow"
-          style={{
-            opacity: this.props.index === 0 ? 0.1 : 1
-          }}
-          onClick={this.prevStepViaArrow}
-        />
+      <>
+        <div className="carousel-outer" style={this.props.style}>
+          <img
+            className="arrow left"
+            src={leftArrow}
+            alt="left arrow"
+            style={{
+              opacity: this.props.index === 0 ? 0.1 : 1
+            }}
+            onClick={this.prevStepViaArrow}
+          />
 
-        {this.renderVideoList()}
+          <div className="carousel-inner">{this.renderVideoList()}</div>
 
-        <img
-          className="arrow right"
-          src={leftArrow}
-          alt="right arrow"
-          style={{
-            opacity:
-              this.props.index === this.props.videos.length - 1 ? 0.1 : 1,
-            transform: "scaleX(-1)"
-          }}
-          onClick={this.nextStepViaArrow}
-        />
-      </div>
+          <img
+            className="arrow right"
+            src={leftArrow}
+            alt="right arrow"
+            style={{
+              opacity:
+                this.props.index === this.props.videos.length - 1 ? 0.1 : 1,
+              transform: "scaleX(-1)"
+            }}
+            onClick={this.nextStepViaArrow}
+          />
+        </div>
+      </>
     );
-  }
-
-  public componentWillUnmount() {
-    document.removeEventListener("keydown", this.handleKeyDown.bind(this));
   }
 }
 export default Carousel;

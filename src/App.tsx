@@ -9,8 +9,10 @@
 
 import * as React from "react";
 import "./App.css";
+import "./Radiobutton.css";
 import Carousel from "./Carousel";
 import AboutVideo from "./About";
+import "normalize.css";
 
 interface IEndpointData {
   entries: IVideo[];
@@ -66,6 +68,7 @@ class App extends React.Component<
       history: IVideo[];
     };
     view: "offered" | "history";
+    isViewingOffered: () => boolean;
     isViewingHistory: () => boolean;
     viewOfferedAnchor: HTMLAnchorElement | null;
     viewHistoryAnchor: HTMLAnchorElement | null;
@@ -74,8 +77,16 @@ class App extends React.Component<
     touchedVideos: Array<IVideo["id"]>;
     cookiePrefix: string;
     parsedCookies: any;
+    keyEventListeners: any;
+    mutateKeyEventListeners: any;
   }
 > {
+  public LEFT_KEY = 37;
+  public RIGHT_KEY = 39;
+  public UP_KEY = 38;
+  public DOWN_KEY = 40;
+  public ESCAPE_KEY = 27;
+  public ENTER_KEY = 13;
   constructor(props: any) {
     super(props);
     this.state = {
@@ -114,6 +125,9 @@ class App extends React.Component<
         }
       },
       view: "offered",
+      isViewingOffered: () => {
+        return this.state.view === "offered";
+      },
       isViewingHistory: () => {
         return this.state.view === "history";
       },
@@ -123,7 +137,19 @@ class App extends React.Component<
       historyHtmlVideos: [],
       touchedVideos: [],
       cookiePrefix: "videoMemory_",
-      parsedCookies: false
+      parsedCookies: false,
+      keyEventListeners: {
+        offered: null,
+        history: null
+      },
+      mutateKeyEventListeners: (listener: any, key: string) => {
+        const newListeners = this.state.keyEventListeners;
+        newListeners[key] = listener;
+
+        this.setState({
+          keyEventListeners: newListeners
+        });
+      }
     };
   }
 
@@ -144,8 +170,23 @@ class App extends React.Component<
     return this.videos()[this.state.index];
   };
 
+  public componentWillMount() {
+    document.addEventListener("keydown", this.handleKeyDown.bind(this));
+  }
+
   public componentDidMount() {
-    // fetch data
+    if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
+      // dev code
+      console.log("dev mode");
+      this.fetchViaClient(this.readCookies);
+    } else {
+      // production code
+      console.log("prod mode");
+      this.fetchViaServer(this.readCookies);
+    }
+  }
+
+  public fetchViaClient = (callback: () => void) => {
     fetch("https://sela-test.herokuapp.com/assets/hkzxv.json")
       .then(response => {
         return response.json();
@@ -159,9 +200,29 @@ class App extends React.Component<
           }
         });
         console.log(this, someJson);
-        this.readCookies();
+        callback();
       });
-  }
+  };
+  public fetchViaServer = (callback: () => void) => {
+    fetch("/with-cors", {
+      headers: { "Content-Type": "application/json" }
+    })
+      .then(response => {
+        console.log("response", response);
+        return response.json();
+      })
+      .then(someJson => {
+        this.setState({
+          isInitWithData: someJson,
+          videoStore: {
+            offered: someJson.entries,
+            history: []
+          }
+        });
+        console.log(this, someJson);
+        callback();
+      });
+  };
 
   public readCookies = () => {
     const cookies = document.cookie.split("; ").filter(x => {
@@ -191,6 +252,7 @@ class App extends React.Component<
   };
 
   public viewOffered = () => {
+    console.log("viewOffered()");
     this.setState({
       view: "offered",
       index: 0
@@ -202,10 +264,12 @@ class App extends React.Component<
   };
 
   public viewHistory = () => {
+    console.log("viewHistory()");
     this.setState({
       view: "history",
       index: 0
     });
+
     if (this.state.viewHistoryAnchor) {
       this.state.viewHistoryAnchor.blur();
     }
@@ -216,6 +280,17 @@ class App extends React.Component<
     this.setState({
       viewOfferedAnchor: someNode
     });
+  };
+
+  public toggleOfferedHistory = () => {
+    console.log("toggleOfferedHistory()");
+    const swapView = {
+      history: this.viewOffered,
+      offered: this.viewHistory
+    };
+    console.log("toggleView", swapView);
+    swapView[this.state.view]();
+    console.log("this.state.view", this.state.view);
   };
 
   public saveHistoryNode = (someNode: HTMLAnchorElement) => {
@@ -237,57 +312,100 @@ class App extends React.Component<
     }
   };
 
+  // this needs to be here since we only want one event per keyDown
+  public handleKeyDown = (event: any) => {
+    if (this.state.keyEventListeners[this.state.view]) {
+      this.state.keyEventListeners[this.state.view](event);
+    }
+  };
+
+  public RenderViewControl = () => {
+    return (
+      <>
+        <form className="viewcontrols">
+          <label key={"1"}>
+            <span>Offered</span>
+            <input
+              type="radio"
+              checked={this.state.view === "offered"}
+              disabled={
+                !this.state.isInitWithData ||
+                !this.state.parsedCookies ||
+                this.state.touchedVideos.length === 0
+              }
+              value={"offered"}
+              name={"someName"}
+              onClick={this.viewOffered}
+            />
+          </label>
+
+          <label key={"2"}>
+            <input
+              type="radio"
+              checked={this.state.view === "history"}
+              disabled={
+                !this.state.isInitWithData ||
+                !this.state.parsedCookies ||
+                this.state.touchedVideos.length === 0
+              }
+              value={"history"}
+              name={"someName"}
+              onClick={this.viewHistory}
+            />
+            <span>History</span>
+          </label>
+        </form>
+      </>
+    );
+  };
+
   public render() {
     return (
       <div className="App">
-        <div>
-          viewing:
-          <a href="#" onClick={this.viewOffered} ref={this.saveOfferedNode}>
-            Our offered videos
-          </a>
-          <br />
-          <a href="#" onClick={this.viewHistory} ref={this.saveHistoryNode}>
-            My history
-          </a>
-        </div>
-
-        <div>index: {this.state.index}</div>
         {this.state.isInitWithData && this.state.parsedCookies ? (
           <>
-            <Carousel
-              videos={this.state.videoStore.offered}
-              htmlVideos={this.state.offeredHtmlVideos}
-              index={this.state.index}
-              nextStep={this.state.nextStep}
-              prevStep={this.state.prevStep}
-              addToHistory={this.state.addToHistory}
-              isViewingHistory={this.state.isViewingHistory}
-              isActive={this.state.view === "offered"}
-              cookiePrefix={this.state.cookiePrefix}
-              parsedCookies={this.state.parsedCookies}
-              style={
-                this.state.view === "offered"
-                  ? { display: "flex" }
-                  : { display: "none" }
-              }
-            />
-            <Carousel
-              videos={this.videos()}
-              htmlVideos={this.state.historyHtmlVideos}
-              index={this.state.index}
-              nextStep={this.state.nextStep}
-              prevStep={this.state.prevStep}
-              addToHistory={this.state.addToHistory}
-              isViewingHistory={this.state.isViewingHistory}
-              isActive={this.state.view === "history"}
-              cookiePrefix={this.state.cookiePrefix}
-              parsedCookies={this.state.parsedCookies}
-              style={
-                this.state.view === "history"
-                  ? { display: "flex" }
-                  : { display: "none" }
-              }
-            />
+            <div className="carousel-wrapper">
+              <Carousel
+                videos={this.state.videoStore.offered}
+                htmlVideos={this.state.offeredHtmlVideos}
+                index={this.state.index}
+                nextStep={this.state.nextStep}
+                prevStep={this.state.prevStep}
+                addToHistory={this.state.addToHistory}
+                isViewingHistory={this.state.isViewingHistory}
+                isActive={this.state.isViewingOffered}
+                cookiePrefix={this.state.cookiePrefix}
+                parsedCookies={this.state.parsedCookies}
+                toggleOfferedHistory={this.toggleOfferedHistory}
+                mutateKeyEventListeners={this.state.mutateKeyEventListeners}
+                view={"offered"}
+                style={
+                  this.state.view === "offered"
+                    ? { display: "flex" }
+                    : { display: "none" }
+                }
+              />
+              <Carousel
+                videos={this.videos()}
+                htmlVideos={this.state.historyHtmlVideos}
+                index={this.state.index}
+                nextStep={this.state.nextStep}
+                prevStep={this.state.prevStep}
+                addToHistory={this.state.addToHistory}
+                isViewingHistory={this.state.isViewingHistory}
+                isActive={this.state.isViewingHistory}
+                cookiePrefix={this.state.cookiePrefix}
+                parsedCookies={this.state.parsedCookies}
+                toggleOfferedHistory={this.toggleOfferedHistory}
+                mutateKeyEventListeners={this.state.mutateKeyEventListeners}
+                view={"history"}
+                style={
+                  this.state.view === "history"
+                    ? { display: "flex" }
+                    : { display: "none" }
+                }
+              />
+            </div>
 
             {this.currentVideo() ? (
               <AboutVideo {...this.videos()[this.state.index]} />
@@ -298,8 +416,14 @@ class App extends React.Component<
         ) : (
           <></>
         )}
+
+        {this.RenderViewControl()}
       </div>
     );
+  }
+
+  public componentWillUnmount() {
+    document.removeEventListener("keydown", this.handleKeyDown.bind(this));
   }
 }
 export default App;

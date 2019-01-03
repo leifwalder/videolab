@@ -1,7 +1,7 @@
 import * as React from "react";
 import App, { IVideo } from "./App";
 import Carousel from "./Carousel";
-import * as playButton from "./assets/play_inverse.png";
+//import * as playButton from "./assets/play_inverse.png";
 
 type Props = {
   video: IVideo;
@@ -11,7 +11,7 @@ type Props = {
   addToHistory: App["state"]["addToHistory"];
   isViewingHistory: App["state"]["isViewingHistory"];
   htmlVideos: HTMLVideoElement[];
-  isActive: boolean;
+  isActive: () => boolean;
   cookiePrefix: string;
   parsedCookie: number;
 };
@@ -141,14 +141,16 @@ class SomeVideo extends React.Component<Props, State> {
   }
   public leaveFullscreen() {
     try {
-      document.exitFullscreen();
+      if (document.exitFullscreen && this.props.isFullscreen()) {
+        document.exitFullscreen();
+      }
     } catch (e) {
       // continue silently...
     }
   }
 
   public handleKeyDown = (event: any) => {
-    if (!this.props.isActive || !this.props.isCurrent) {
+    if (!this.props.isActive() || !this.props.isCurrent) {
       return;
     }
     switch (event.keyCode) {
@@ -180,15 +182,10 @@ class SomeVideo extends React.Component<Props, State> {
 
   public render() {
     return (
-      <div>
-        {this.state.isPristine && this.props.isCurrent ? (
-          <img className="play-button flip-horizontally" src={playButton} />
-        ) : (
-          <></>
-        )}
+      <>
         <video
           id={`${this.props.video.id} history:${this.props.isViewingHistory()}`}
-          width={this.props.isCurrent ? 400 : 300}
+          width={"100%"} //{this.props.isCurrent ? 400 : 300}
           controls={this.state.controls()}
           autoPlay={this.state.autoPlay}
           src={this.getVidSrc()}
@@ -196,7 +193,13 @@ class SomeVideo extends React.Component<Props, State> {
           ref={this.saveNode}
           style={this.videoStyle()}
         />
-      </div>
+
+        {/*this.state.isPristine && this.props.isCurrent ? (
+          <img className="play-button flip-horizontally" src={playButton} />
+        ) : (
+          <></>
+        )*/}
+      </>
     );
   }
 
