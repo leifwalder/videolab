@@ -70,8 +70,7 @@ class App extends React.Component<
     view: "offered" | "history";
     isViewingOffered: () => boolean;
     isViewingHistory: () => boolean;
-    viewOfferedAnchor: HTMLAnchorElement | null;
-    viewHistoryAnchor: HTMLAnchorElement | null;
+
     offeredHtmlVideos: HTMLVideoElement[];
     historyHtmlVideos: HTMLVideoElement[];
     touchedVideos: Array<IVideo["id"]>;
@@ -79,6 +78,8 @@ class App extends React.Component<
     parsedCookies: any;
     keyEventListeners: any;
     mutateKeyEventListeners: any;
+    offeredNode: HTMLInputElement | null;
+    historyNode: HTMLInputElement | null;
   }
 > {
   public LEFT_KEY = 37;
@@ -131,8 +132,6 @@ class App extends React.Component<
       isViewingHistory: () => {
         return this.state.view === "history";
       },
-      viewOfferedAnchor: null,
-      viewHistoryAnchor: null,
       offeredHtmlVideos: [],
       historyHtmlVideos: [],
       touchedVideos: [],
@@ -149,7 +148,9 @@ class App extends React.Component<
         this.setState({
           keyEventListeners: newListeners
         });
-      }
+      },
+      offeredNode: null,
+      historyNode: null
     };
   }
 
@@ -257,10 +258,7 @@ class App extends React.Component<
       view: "offered",
       index: 0
     });
-    if (this.state.viewOfferedAnchor) {
-      this.state.viewOfferedAnchor.blur();
-    }
-    this.pauseAllVideos();
+    this.onViewChange();
   };
 
   public viewHistory = () => {
@@ -269,16 +267,28 @@ class App extends React.Component<
       view: "history",
       index: 0
     });
+    this.onViewChange();
+  };
 
-    if (this.state.viewHistoryAnchor) {
-      this.state.viewHistoryAnchor.blur();
+  public onViewChange = () => {
+    if (this.state.offeredNode) {
+      this.state.offeredNode.blur();
+    }
+    if (this.state.historyNode) {
+      this.state.historyNode.blur();
     }
     this.pauseAllVideos();
   };
 
-  public saveOfferedNode = (someNode: HTMLAnchorElement) => {
+  public saveOfferedNode = (offeredNode: HTMLInputElement) => {
     this.setState({
-      viewOfferedAnchor: someNode
+      offeredNode
+    });
+  };
+
+  public saveHistoryNode = (historyNode: HTMLInputElement) => {
+    this.setState({
+      historyNode
     });
   };
 
@@ -291,12 +301,6 @@ class App extends React.Component<
     console.log("toggleView", swapView);
     swapView[this.state.view]();
     console.log("this.state.view", this.state.view);
-  };
-
-  public saveHistoryNode = (someNode: HTMLAnchorElement) => {
-    this.setState({
-      viewHistoryAnchor: someNode
-    });
   };
 
   public pauseAllVideos = () => {
@@ -326,6 +330,7 @@ class App extends React.Component<
           <label key={"1"}>
             <span>Offered</span>
             <input
+              ref={this.saveOfferedNode}
               type="radio"
               checked={this.state.view === "offered"}
               disabled={
@@ -341,6 +346,7 @@ class App extends React.Component<
 
           <label key={"2"}>
             <input
+              ref={this.saveHistoryNode}
               type="radio"
               checked={this.state.view === "history"}
               disabled={
