@@ -2,7 +2,11 @@
 /* tslint:disable:no-shadowed-variable */
 const express = require("express");
 const cors = require("cors");
-const port = 3000;
+
+// set the port of our application
+// process.env.PORT lets the port be set by Heroku
+var port = process.env.PORT || 3000;
+
 const app = express();
 
 const fetch = require("node-fetch");
