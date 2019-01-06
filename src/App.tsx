@@ -320,7 +320,7 @@ class App extends React.Component<
           <label key={"1"}>
             <span
               style={
-                this.state.historyHtmlVideos.length === 0
+                this.state.touchedVideos.length === 0
                   ? { color: "lightgrey" }
                   : {}
               }
@@ -358,7 +358,7 @@ class App extends React.Component<
             />
             <span
               style={
-                this.state.historyHtmlVideos.length === 0
+                this.state.touchedVideos.length === 0
                   ? { color: "lightgrey" }
                   : {}
               }
@@ -367,7 +367,7 @@ class App extends React.Component<
             </span>
           </label>
         </form>
-        {this.state.historyHtmlVideos.length === 0 ? (
+        {this.state.touchedVideos.length === 0 ? (
           <>You don't have a history yet</>
         ) : (
           <></>
