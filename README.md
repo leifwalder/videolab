@@ -1,7 +1,9 @@
 # videolab
 
+deploy instructions:
 `npm install`
 
-`npm run build`
+`npm run start`
 
-`node app.js`
+dev instructions:
+`npm run some-dev`
