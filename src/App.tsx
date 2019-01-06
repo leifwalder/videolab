@@ -1,15 +1,5 @@
-/*
-
-  [x] cookie/local save history
-  [x] save index what video you looked at when switching history / offered
-  [ ] nodejs app to circumvent CORS
-
-
-*/
-
 import * as React from "react";
 import "./App.css";
-import "./Radiobutton.css";
 import Carousel from "./Carousel";
 import AboutVideo from "./About";
 import "normalize.css";
@@ -328,7 +318,15 @@ class App extends React.Component<
       <>
         <form className="viewcontrols">
           <label key={"1"}>
-            <span>Offered</span>
+            <span
+              style={
+                this.state.historyHtmlVideos.length === 0
+                  ? { color: "lightgrey" }
+                  : {}
+              }
+            >
+              Offered
+            </span>
             <input
               ref={this.saveOfferedNode}
               type="radio"
@@ -358,9 +356,22 @@ class App extends React.Component<
               name={"someName"}
               onClick={this.viewHistory}
             />
-            <span>History</span>
+            <span
+              style={
+                this.state.historyHtmlVideos.length === 0
+                  ? { color: "lightgrey" }
+                  : {}
+              }
+            >
+              History
+            </span>
           </label>
         </form>
+        {this.state.historyHtmlVideos.length === 0 ? (
+          <>You don't have a history yet</>
+        ) : (
+          <></>
+        )}
       </>
     );
   };

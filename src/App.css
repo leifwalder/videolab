@@ -88,6 +88,11 @@ video {
   width: 10vw;
   height: 10vw;
   align-self: center;
+  border-radius: 50%;
+  border: 2px dotted rgba(0, 0, 0, 0);
+}
+.arrow:hover {
+  border: 2px dotted lightgrey;
 }
 
 .flip-horizontally {
@@ -101,8 +106,8 @@ video {
 
 .play-button {
   position: absolute;
-  top: 23%;
-  left: 50%;
+  top: 21%;
+  left: 48.5%;
   width: 4vw;
   height: auto;
 }
@@ -121,4 +126,8 @@ video {
 .viewcontrols span {
   margin-left: 10px;
   margin-right: 10px;
+}
+
+*:focus {
+  border: 2xp red dashed !important;
 }

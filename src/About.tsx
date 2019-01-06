@@ -29,7 +29,7 @@ class AboutVideo extends React.Component<IVideo, {}> {
   };
 
   public toReadableDate(unixEpochTime: number): string {
-    return new Date(unixEpochTime * 1000).toLocaleDateString();
+    return new Date(unixEpochTime).toLocaleDateString();
   }
 
   public render() {

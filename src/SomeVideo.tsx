@@ -1,7 +1,7 @@
 import * as React from "react";
 import App, { IVideo } from "./App";
 import Carousel from "./Carousel";
-//import * as playButton from "./assets/play_inverse.png";
+import * as playButton from "./assets/play_inverse.png";
 
 type Props = {
   video: IVideo;
@@ -95,9 +95,10 @@ class SomeVideo extends React.Component<Props, State> {
 
   public handleClick = () => {
     if (this.props.isCurrent) {
-      if (this.state.node) {
+      this.togglePlay();
+      /*if (this.state.node) {
         this.state.node.pause();
-      }
+      }*/
       this.touchPristineVideo();
     }
   };
@@ -185,7 +186,7 @@ class SomeVideo extends React.Component<Props, State> {
       <>
         <video
           id={`${this.props.video.id} history:${this.props.isViewingHistory()}`}
-          width={"100%"} //{this.props.isCurrent ? 400 : 300}
+          width={"100%"}
           controls={this.state.controls()}
           autoPlay={this.state.autoPlay}
           src={this.getVidSrc()}
@@ -194,11 +195,11 @@ class SomeVideo extends React.Component<Props, State> {
           style={this.videoStyle()}
         />
 
-        {/*this.state.isPristine && this.props.isCurrent ? (
+        {this.state.isPristine && this.props.isCurrent ? (
           <img className="play-button flip-horizontally" src={playButton} />
         ) : (
           <></>
-        )*/}
+        )}
       </>
     );
   }

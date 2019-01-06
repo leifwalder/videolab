@@ -48,8 +48,6 @@ class Carousel extends React.Component<
   }
 
   public componentWillMount() {
-    //document.addEventListener("keydown", this.handleKeyDown.bind(this));
-
     this.props.mutateKeyEventListeners(this.handleKeyDown, this.props.view);
   }
 
@@ -159,7 +157,7 @@ class Carousel extends React.Component<
                   cookiePrefix={this.props.cookiePrefix}
                   parsedCookie={this.props.parsedCookies[vid.id]}
                 />
-                <h2 className="debug">{index}</h2>
+                {/*<h2 className="debug">{index}</h2>*/}
               </li>
             );
           })
