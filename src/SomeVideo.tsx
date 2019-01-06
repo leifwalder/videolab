@@ -184,6 +184,14 @@ class SomeVideo extends React.Component<Props, State> {
   public render() {
     return (
       <>
+        <div className="play-button-wrapper">
+          {this.state.isPristine && this.props.isCurrent ? (
+            <img className="play-button flip-horizontally" src={playButton} />
+          ) : (
+            <></>
+          )}
+        </div>
+
         <video
           id={`${this.props.video.id} history:${this.props.isViewingHistory()}`}
           width={"100%"}
@@ -194,12 +202,6 @@ class SomeVideo extends React.Component<Props, State> {
           ref={this.saveNode}
           style={this.videoStyle()}
         />
-
-        {this.state.isPristine && this.props.isCurrent ? (
-          <img className="play-button flip-horizontally" src={playButton} />
-        ) : (
-          <></>
-        )}
       </>
     );
   }

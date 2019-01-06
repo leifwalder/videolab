@@ -102,12 +102,12 @@ video {
 
 .play-button-wrapper {
   position: relative;
+  left: 43%;
 }
 
 .play-button {
   position: absolute;
-  top: 21%;
-  left: 48.5%;
+  top: 37.5%;
   width: 4vw;
   height: auto;
 }
